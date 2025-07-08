@@ -1,0 +1,44 @@
+#FROM eclipse-temurin:17-jdk-jammy
+#WORKDIR /app
+#COPY target/*.jar app.jar
+#COPY src/main/resources/sample-data.csv /app/sample-data.csv
+#  # Create directory for H2 database files
+#RUN mkdir -p /data
+#  # Optional: Expose H2 console port if you want to access it
+#EXPOSE 8080
+#ENTRYPOINT ["java", "-jar", "app.jar"]
+
+
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-batch
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: batch_process
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  batch-app:
+    build: .
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/batch_process?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: password
+    ports:
+      - "8080:8080"
+
+volumes:
+  mysql_data:
