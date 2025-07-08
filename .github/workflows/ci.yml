@@ -25,6 +25,7 @@ jobs:
           ${{ runner.os }}-maven-
           
     - name: Build with Maven
+      working-directory: ./initial
       run: mvn --batch-mode clean test
 
     # - name: Publish to GitHub Packages Apache Maven
