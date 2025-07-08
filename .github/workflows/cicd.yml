@@ -1,4 +1,4 @@
-name: CI
+name: CICD
 on: push
 jobs:
   build:
@@ -24,6 +24,12 @@ jobs:
     - name: Build with Maven
       working-directory: ./initial
       run: mvn --batch-mode clean test package
+
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v3
+      with:
+       name: app-jar
+       path: initial/target/*.jar
   
   deploy:
     runs-on: ubuntu-latest
