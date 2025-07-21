@@ -96,20 +96,35 @@ jobs:
         echo "Waiting for MySQL pod..."
         kubectl wait --for=condition=ready pod -l app=demo-app --timeout=120s
         
-    - name: Inject image into Job manifest
-      working-directory: ./initial
-      run: |
-        export IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
-        envsubst < app-deployment.yaml > batch-job.yaml
-        
+    # - name: Inject image into Job manifest
+    #   working-directory: ./initial
+    #   run: |
+    #     export IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
+    #     envsubst < app-deployment.yaml > batch-job.yaml
+
     - name: Delete existing job if it exists
       run: |
         kubectl delete job batch-job --ignore-not-found
-    
-    - name: Apply batch Job to EKS
+
+    - name: Inject image into CronJob manifest
       working-directory: ./initial
       run: |
-        kubectl apply -f batch-job.yaml
+        export IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
+        envsubst < app-deployment.yaml > final-cronjob.yaml
+
+    - name: Apply CronJob to EKS
+      working-directory: ./initial
+      run: |
+        kubectl apply -f final-cronjob.yaml
+            
+    # - name: Delete existing job if it exists
+    #   run: |
+    #     kubectl delete job batch-job --ignore-not-found
+    
+    # - name: Apply batch Job to EKS
+    #   working-directory: ./initial
+    #   run: |
+    #     kubectl apply -f batch-job.yaml
       
     # - name: Deploy Spring Batch App
     #   working-directory: ./initial
