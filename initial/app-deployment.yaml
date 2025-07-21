@@ -77,7 +77,8 @@ spec:
       initContainers:
         - name: init-db
           image: mysql:5.6
-          command: [ 'sh', '-c', 'mysql -h $DB_SERVER -u$DB_USERNAME -p$DB_PASSWORD $DB_NAME < /scripts/schema.sql' ]
+#          command: [ 'sh', '-c', 'mysql -h $DB_SERVER -u$DB_USERNAME -p$DB_PASSWORD $DB_NAME < /scripts/schema.sql' ]
+          command: ["sh", "-c", "echo DB_SERVER=$DB_SERVER DB_USERNAME=$DB_USERNAME DB_PASSWORD=$DB_PASSWORD DB_NAME=$DB_NAME && sleep 300"]
           env:
             - name: DB_SERVER
               valueFrom:
