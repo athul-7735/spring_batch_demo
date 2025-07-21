@@ -74,9 +74,42 @@ jobs:
       run: |
         docker push ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG
 
-    # - name: Update kubeconfig for EKS
+    - name: Update kubeconfig for EKS
+      run: |
+        aws eks update-kubeconfig --region $AWS_REGION --name ${{ secrets.EKS_CLUSTER_NAME }}
+        
+    - name: Apply MySQL ConfigMap, Secret, and Deployment
+      working-directory: ./initial
+      run: |
+        kubectl apply -f mysql-configmap.yaml
+        kubectl apply -f mysql-secret.yaml
+        kubectl apply -f mysql-deployment.yaml
+
+    - name: Wait for MySQL readiness
+      run: |
+        echo "Waiting for MySQL pod..."
+        kubectl wait --for=condition=ready pod -l app=demo-app --timeout=120s
+        
+    - name: Inject image into Job manifest
+      working-directory: ./initial
+      run: |
+        export IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
+        envsubst < app-deployment.yaml > batch-job.yaml
+
+    - name: Apply batch Job to EKS
+      working-directory: ./initial
+      run: |
+        kubectl apply -f batch-job.yaml
+      
+    # - name: Deploy Spring Batch App
+    #   working-directory: ./initial
     #   run: |
-    #     aws eks update-kubeconfig --region $AWS_REGION --name ${{ secrets.EKS_CLUSTER_NAME }}
+    #     kubectl apply -f app-deployment.yaml
+
+    # - name: Set image for batch-app
+    #   working-directory: ./initial
+    #   run: |
+    #     kubectl set image deployment/batch-app batch-app=${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG
 
     # - name: Deploy to EKS
     #   run: |
