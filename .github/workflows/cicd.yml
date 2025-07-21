@@ -80,6 +80,7 @@ jobs:
 
   
     - name: Create ConfigMap for SQL
+      working-directory: ./initial
       run: |
         kubectl create configmap init-sql-script --from-file=src/main/resources/schema.sql --dry-run=client -o yaml | kubectl apply -f -
         
