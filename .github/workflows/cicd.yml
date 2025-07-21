@@ -95,7 +95,11 @@ jobs:
       run: |
         export IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
         envsubst < app-deployment.yaml > batch-job.yaml
-
+        
+    - name: Delete existing job if it exists
+      run: |
+        kubectl delete job batch-job --ignore-not-found
+    
     - name: Apply batch Job to EKS
       working-directory: ./initial
       run: |
