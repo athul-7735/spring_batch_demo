@@ -82,7 +82,7 @@ jobs:
       working-directory: ./initial
       run: |
         kubectl apply -f mysql-configmap.yaml
-        kubectl apply -f mysql-secret.yaml
+        kubectl apply -f secrets.yaml
         kubectl apply -f mysql-deployment.yaml
 
     - name: Wait for MySQL readiness
