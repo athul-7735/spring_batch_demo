@@ -1,20 +1,20 @@
-# PersistentVolume
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: mysql-pv
-spec:
-  capacity:
-    storage: 2Gi
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  volumeMode: Filesystem
-  storageClassName: manual
-  awsElasticBlockStore:
-    volumeID: vol-0431616e41bc74819
-    fsType: ext4
----
+## PersistentVolume
+#apiVersion: v1
+#kind: PersistentVolume
+#metadata:
+#  name: mysql-pv
+#spec:
+#  capacity:
+#    storage: 2Gi
+#  accessModes:
+#    - ReadWriteOnce
+#  persistentVolumeReclaimPolicy: Retain
+#  volumeMode: Filesystem
+#  storageClassName: manual
+#  awsElasticBlockStore:
+#    volumeID: vol-0431616e41bc74819
+#    fsType: ext4
+#---
 # PersistentVolumeClaim
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -26,9 +26,10 @@ spec:
   resources:
     requests:
       storage: 2Gi
-  storageClassName: manual
-  volumeName: mysql-pv
+  storageClassName: gp2
+#  volumeName: mysql-pv
 ---
+#MySQL Service
 apiVersion: v1
 kind: Service
 metadata:
