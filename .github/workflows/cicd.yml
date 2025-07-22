@@ -137,7 +137,7 @@ jobs:
     - name: Apply Kyverno verify-image policy
       working-directory: ./initial
       run: |
-        kubectl apply -f verify-image-policy.yaml
+        kubectl apply -f kyverno-policy.yaml
 
     - name: Delete existing job if it exists
       run: |
