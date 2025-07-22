@@ -122,14 +122,23 @@ jobs:
     # - name: Create Kyverno namespace
     #   run: |
     #     kubectl create namespace kyverno --dry-run=client -o yaml | kubectl apply -f -
-        
-    - name: Install Kyverno via kubectl
-      # uses: kyverno/action-install-cli@v0.2.0
-      # with:
-      #   release: 'v1.9.5'
-      #   verfy: true
+    
+    - name: Check and Install Kyverno
       run: |
-        kubectl create -f https://github.com/kyverno/kyverno/releases/download/v1.11.1/install.yaml
+        if kubectl get ns kyverno > /dev/null 2>&1; then
+          echo "Kyverno already installed."
+        else
+          echo "Installing Kyverno..."
+          kubectl apply -f https://github.com/kyverno/kyverno/releases/download/v1.11.1/install.yaml
+        fi
+
+    # - name: Install Kyverno via kubectl
+    #   # uses: kyverno/action-install-cli@v0.2.0
+    #   # with:
+    #   #   release: 'v1.9.5'
+    #   #   verfy: true
+    #   run: |
+    #     kubectl create -f https://github.com/kyverno/kyverno/releases/download/v1.11.1/install.yaml
     
     - name: Wait for Kyverno to be ready
       run: |
