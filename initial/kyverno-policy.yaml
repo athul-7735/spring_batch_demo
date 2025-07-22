@@ -1,0 +1,27 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-cosign-signatures
+spec:
+  validationFailureAction: enforce
+  background: false
+  rules:
+    - name: check-image-signature
+      match:
+        resources:
+          kinds:
+            - Pod
+      validate:
+        message: "Image {{request.object.spec.containers[].image}} is not signed with a valid key."
+        pattern:
+          spec:
+            containers:
+              - image: "*"
+                imagePullPolicy: Always
+        verifyImages:
+          - image: "557690581666.dkr.ecr.eu-west-1.amazonaws.com/*:latest"
+            key: "cosign.pub"
+            keyRef:
+              name: cosign-pub-key
+              namespace: kyverno
+            repository: "557690581666.dkr.ecr.eu-west-1.amazonaws.com"

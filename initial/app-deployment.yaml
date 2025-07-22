@@ -155,6 +155,9 @@ metadata:
   name: batch-job
 spec:
   schedule: "0 * * * *"  # Every hour (change as needed)
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  ttlSecondsAfterFinished: 120
   jobTemplate:
     spec:
       template:

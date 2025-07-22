@@ -56,6 +56,8 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
+        role-to-assume: arn:aws:iam::557690581666:role/GitHubActionsEKSRole
+        role-session-name: GitHubActions
 
     - name: Login to Amazon ECR
       id: login-ecr
@@ -74,11 +76,25 @@ jobs:
       run: |
         docker push ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG
 
+    - name: Install Cosign
+      uses: sigstore/cosign-installer@v3.1.1
+      with:
+        cosign-release: 'v2.2.3'
+
+    - name: Sign Docker image with Cosign
+      env:
+        COSIGN_EXPERIMENTAL: "1"
+        COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+        COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
+      run: |
+        IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
+        echo "$COSIGN_KEY" > cosign.key
+        cosign sign --key cosign.key $IMAGE
+
     - name: Update kubeconfig for EKS
       run: |
         aws eks update-kubeconfig --region $AWS_REGION --name ${{ secrets.EKS_CLUSTER_NAME }}
 
-  
     - name: Create ConfigMap for SQL
       working-directory: ./initial
       run: |
@@ -101,6 +117,20 @@ jobs:
     #   run: |
     #     export IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
     #     envsubst < app-deployment.yaml > batch-job.yaml
+    
+    - name: Install Kyverno via kubectl
+      run: |
+        kubectl apply -f https://raw.githubusercontent.com/kyverno/kyverno/main/definitions/release/install.yaml
+
+    - name: Apply Cosign public key ConfigMap
+      working-directory: ./initial
+      run: |
+        kubectl apply -f kyverno-configmap.yaml
+
+    - name: Apply Kyverno verify-image policy
+      working-directory: ./initial
+      run: |
+        kubectl apply -f verify-image-policy.yaml
 
     - name: Delete existing job if it exists
       run: |
@@ -116,7 +146,18 @@ jobs:
       working-directory: ./initial
       run: |
         kubectl apply -f final-cronjob.yaml
-            
+
+
+
+
+
+
+
+
+
+
+
+        
     # - name: Delete existing job if it exists
     #   run: |
     #     kubectl delete job batch-job --ignore-not-found
