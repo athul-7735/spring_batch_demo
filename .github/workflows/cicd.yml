@@ -119,15 +119,22 @@ jobs:
     #     export IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
     #     envsubst < app-deployment.yaml > batch-job.yaml
     
-    - name: Create Kyverno namespace
-      run: |
-        kubectl create namespace kyverno --dry-run=client -o yaml | kubectl apply -f -
+    # - name: Create Kyverno namespace
+    #   run: |
+    #     kubectl create namespace kyverno --dry-run=client -o yaml | kubectl apply -f -
         
     - name: Install Kyverno via kubectl
-      uses: kyverno/action-install-cli@v0.2.0
-      with:
-        release: 'v1.9.5'
-        verfy: true
+      # uses: kyverno/action-install-cli@v0.2.0
+      # with:
+      #   release: 'v1.9.5'
+      #   verfy: true
+      run: |
+        kubectl create -f https://github.com/kyverno/kyverno/releases/download/v1.11.1/install.yaml
+    
+    - name: Wait for Kyverno to be ready
+      run: |
+        echo "Waiting for Kyverno pods to be ready..."
+        kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=kyverno --namespace kyverno --timeout=120s
 
     - name: Apply Cosign public key ConfigMap
       working-directory: ./initial
