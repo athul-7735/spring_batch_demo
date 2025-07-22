@@ -120,8 +120,10 @@ jobs:
     #     envsubst < app-deployment.yaml > batch-job.yaml
     
     - name: Install Kyverno via kubectl
-      run: |
-        kubectl apply -f https://raw.githubusercontent.com/kyverno/kyverno/main/config/release/install.yaml
+      uses: kyverno/action-install-cli@v0.2.0
+      with:
+        release: 'v1.9.5'
+        verfy: true
 
     - name: Apply Cosign public key ConfigMap
       working-directory: ./initial
