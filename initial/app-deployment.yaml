@@ -155,6 +155,8 @@ metadata:
   name: batch-job
 spec:
   schedule: "*/5 * * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
   jobTemplate:
     spec:
       template:
