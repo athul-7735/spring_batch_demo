@@ -18,10 +18,10 @@ public class BatchProcessingApplication {
 		ConfigurableApplicationContext context = SpringApplication.run(BatchProcessingApplication.class, args);
 
 		// Keep application running after batch completes
-		System.out.println("Batch completed. Press Ctrl+C to exit.");
-		new CountDownLatch(1).await(); // Block indefinitely
+//		System.out.println("Batch completed. Press Ctrl+C to exit.");
+//		new CountDownLatch(1).await(); // Block indefinitely
 
-//		System.exit(SpringApplication.exit(SpringApplication.run(BatchProcessingApplication.class, args)));
+		System.exit(SpringApplication.exit(SpringApplication.run(BatchProcessingApplication.class, args)));
 	}
 
 }
