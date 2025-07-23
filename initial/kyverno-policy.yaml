@@ -12,10 +12,21 @@ spec:
           kinds:
             - Pod
       verifyImages:
-        - image: "557690581666.dkr.ecr.eu-west-1.amazonaws.com/*"
-          key: |
-            -----BEGIN PUBLIC KEY-----
-            MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/kbm1DvCTLIxyp9qE5PrIci3y8kR
-            9gM5heLisKwfG9wHftWVYYOhi5y4KFHx+QuAiZEypoFp8y0CLcsziawsbQ==
-            -----END PUBLIC KEY-----
-          repository: "557690581666.dkr.ecr.eu-west-1.amazonaws.com"
+#        - image: "557690581666.dkr.ecr.eu-west-1.amazonaws.com/*"
+#          key: |
+#            -----BEGIN PUBLIC KEY-----
+#            MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/kbm1DvCTLIxyp9qE5PrIci3y8kR
+#            9gM5heLisKwfG9wHftWVYYOhi5y4KFHx+QuAiZEypoFp8y0CLcsziawsbQ==
+#            -----END PUBLIC KEY-----
+#          repository: "557690581666.dkr.ecr.eu-west-1.amazonaws.com"
+        - imageReferences:
+          - "ghcr.io/kyverno/test-verify-image*"
+          attestors:
+              - count: 1
+                entries:
+                  - keys:
+                      publicKeys: |-
+                        -----BEGIN PUBLIC KEY-----
+                        MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/kbm1DvCTLIxyp9qE5PrIci3y8kR
+                        9gM5heLisKwfG9wHftWVYYOhi5y4KFHx+QuAiZEypoFp8y0CLcsziawsbQ==
+                        -----END PUBLIC KEY-----
