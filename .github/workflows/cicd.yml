@@ -115,7 +115,7 @@ jobs:
     
     - name: Check and Install Kyverno
       run: |
-        if kubectl get ns kyverno > /dev/null 2>&1; then
+        if kubectl wait --for=condition=ready pod -l app.kubernetes.io/part-of=kyverno --namespace kyverno --timeout=30s; then
           echo "Kyverno already installed."
         else
           echo "Installing Kyverno..."
