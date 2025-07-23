@@ -4,7 +4,7 @@ metadata:
   name: require-cosign-signatures
 spec:
   validationFailureAction: enforce
-  background: false
+  background: true
   rules:
     - name: verify-signed-images
       match:
@@ -12,7 +12,7 @@ spec:
           kinds:
             - Pod
       verifyImages:
-        - image: "557690581666.dkr.ecr.eu-west-1.amazonaws.com/*:latest"
+        - image: "557690581666.dkr.ecr.eu-west-1.amazonaws.com/*"
           key: |
             -----BEGIN PUBLIC KEY-----
             MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/kbm1DvCTLIxyp9qE5PrIci3y8kR
