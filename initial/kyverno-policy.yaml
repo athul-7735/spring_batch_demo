@@ -19,3 +19,4 @@ spec:
             9gM5heLisKwfG9wHftWVYYOhi5y4KFHx+QuAiZEypoFp8y0CLcsziawsbQ==
             -----END PUBLIC KEY-----
           repository: "557690581666.dkr.ecr.eu-west-1.amazonaws.com"
+          registry: "557690581666.dkr.ecr.eu-west-1.amazonaws.com"
