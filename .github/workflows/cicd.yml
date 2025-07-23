@@ -112,16 +112,6 @@ jobs:
       run: |
         echo "Waiting for MySQL pod..."
         kubectl wait --for=condition=ready pod -l app=demo-app --timeout=120s
-        
-    # - name: Inject image into Job manifest
-    #   working-directory: ./initial
-    #   run: |
-    #     export IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
-    #     envsubst < app-deployment.yaml > batch-job.yaml
-    
-    # - name: Create Kyverno namespace
-    #   run: |
-    #     kubectl create namespace kyverno --dry-run=client -o yaml | kubectl apply -f -
     
     - name: Check and Install Kyverno
       run: |
