@@ -20,7 +20,7 @@ spec:
 #            -----END PUBLIC KEY-----
 #          repository: "557690581666.dkr.ecr.eu-west-1.amazonaws.com"
         - imageReferences:
-          - "ghcr.io/kyverno/test-verify-image*"
+          - "557690581666.dkr.ecr.eu-west-1.amazonaws.com/*"
           attestors:
               - count: 1
                 entries:
