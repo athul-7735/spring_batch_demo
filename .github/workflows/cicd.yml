@@ -118,6 +118,15 @@ jobs:
         curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
         helm version
 
+    - name: Add Falco Helm repo
+        run: helm repo add falcosecurity https://falcosecurity.github.io/charts
+
+    - name: Update Helm repos
+      run: helm repo update
+
+    - name: Install Falco
+      run: helm install falco falcosecurity/falco
+      
     - name: Add Kyverno Helm repo
       run: helm repo add kyverno https://kyverno.github.io/kyverno/
 
