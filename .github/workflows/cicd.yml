@@ -131,15 +131,16 @@ jobs:
         helm upgrade --install falcosidekick falcosecurity/falcosidekick \
           --namespace falco --create-namespace \
           --set config.slack.webhookurl="https://hooks.slack.com/services/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" \
-          --set config.slack.minimumpriority="warning"
+          --set config.slack.minimumpriority="notice"
 
     - name: Install Falco with HTTP output enabled
       run: |
         helm upgrade --install falco falcosecurity/falco \
           --namespace falco \
           --set falco.jsonOutput=true \
-          --set falco.httpOutput.enabled=true \
-          --set falco.httpOutput.url="http://falcosidekick.falco.svc.cluster.local:2801" 
+          --set falco.http_output.enabled=true \
+          --set falco.http_output.url="http://falcosidekick.falco.svc.cluster.local:2801" \
+          --wait
       
     - name: Install Kyverno
       run: |
