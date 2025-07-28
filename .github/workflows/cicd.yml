@@ -126,21 +126,35 @@ jobs:
     - name: Update Helm repos
       run: helm repo update
 
-    - name: Install Falcosidekick with Slack config
-      run: |
-        helm upgrade --install falcosidekick falcosecurity/falcosidekick \
-          --namespace falco --create-namespace \
-          --set config.slack.webhookurl="https://hooks.slack.com/services/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" \
-          --set config.slack.minimumpriority="notice"
+    # - name: Install Falcosidekick with Slack config
+    #   run: |
+    #     helm upgrade --install falcosidekick falcosecurity/falcosidekick \
+    #       --namespace falco --create-namespace \
+    #       --set config.slack.webhookurl="https://hooks.slack.com/services/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" \
+    #       --set config.slack.minimumpriority="warning"
 
     - name: Install Falco with HTTP output enabled
       run: |
-        helm upgrade --install falco falcosecurity/falco \
-          --namespace falco \
+        helm install falco -n falco falcosecurity/falco \
+          --set falcosidekick.enabled=true \
+          --set falcosidekick.webui.enabled=true \
+          --set auditLog.enabled=true \
+          --set falco.jsonOutput=true \
+          --set falco.fileOutput.enabled=true \
           --set falco.jsonOutput=true \
           --set falco.http_output.enabled=true \
           --set falco.http_output.url="http://falcosidekick.falco.svc.cluster.local:2801" \
-          --wait
+          --create-namespace \
+          --set falcosidekick.config.slack.webhookurl="https://hooks.slack.com/services/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"
+
+    # - name: Install Falco with HTTP output enabled
+    #   run: |
+    #     helm upgrade --install falco falcosecurity/falco \
+    #       --namespace falco \
+    #       --set falco.jsonOutput=true \
+    #       --set falco.http_output.enabled=true \
+    #       --set falco.http_output.url="http://falcosidekick.falco.svc.cluster.local:2801" \
+    #       --wait
       
     - name: Install Kyverno
       run: |
