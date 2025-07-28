@@ -134,12 +134,12 @@ jobs:
           --set config.slack.minimumpriority="warning"
 
     - name: Install Falco with HTTP output enabled
-    run: |
-      helm upgrade --install falco falcosecurity/falco \
-        --namespace falco \
-        --set falco.jsonOutput=true \
-        --set falco.httpOutput.enabled=true \
-        --set falco.httpOutput.url="http://falcosidekick.falco.svc.cluster.local:2801" 
+      run: |
+        helm upgrade --install falco falcosecurity/falco \
+          --namespace falco \
+          --set falco.jsonOutput=true \
+          --set falco.httpOutput.enabled=true \
+          --set falco.httpOutput.url="http://falcosidekick.falco.svc.cluster.local:2801" 
       
     - name: Install Kyverno
       run: |
