@@ -135,7 +135,7 @@ jobs:
 
     - name: Install Falco with HTTP output enabled
       run: |
-        helm upgrade install falco -n falco falcosecurity/falco \
+        helm upgrade --install falco -n falco falcosecurity/falco \
           --set falcosidekick.enabled=true \
           --set falcosidekick.webui.enabled=true \
           --set auditLog.enabled=true \
