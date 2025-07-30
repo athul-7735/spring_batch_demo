@@ -141,7 +141,6 @@ jobs:
           --set auditLog.enabled=true \
           --set falco.jsonOutput=true \
           --set falco.fileOutput.enabled=true \
-          --set falco.jsonOutput=true \
           --set falco.http_output.enabled=true \
           --set falco.http_output.url="http://falcosidekick.falco.svc.cluster.local:2801" \
           --create-namespace \
