@@ -142,7 +142,7 @@ jobs:
           --set falco.jsonOutput=true \
           --set falco.fileOutput.enabled=true \
           --set falco.http_output.enabled=true \
-          --set falco.http_output.url="http://falcosidekick.falco.svc.cluster.local:2801" \
+          --set falco.http_output.url="http://falco-falcosidekick.falco.svc.cluster.local:2801" \
           --create-namespace \
           --set falcosidekick.config.slack.webhookurl="https://hooks.slack.com/services/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"
 
