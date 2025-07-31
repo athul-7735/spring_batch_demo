@@ -126,13 +126,6 @@ jobs:
     - name: Update Helm repos
       run: helm repo update
 
-    # - name: Install Falcosidekick with Slack config
-    #   run: |
-    #     helm upgrade --install falcosidekick falcosecurity/falcosidekick \
-    #       --namespace falco --create-namespace \
-    #       --set config.slack.webhookurl="https://hooks.slack.com/services/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" \
-    #       --set config.slack.minimumpriority="warning"
-
     - name: Install Falco with HTTP output enabled
       run: |
         helm upgrade --install falco -n falco falcosecurity/falco \
@@ -145,38 +138,12 @@ jobs:
           --set falco.http_output.url="http://falco-falcosidekick.falco.svc.cluster.local:2801" \
           --create-namespace \
           --set falcosidekick.config.slack.webhookurl="https://hooks.slack.com/services/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"
-
-    # - name: Install Falco with HTTP output enabled
-    #   run: |
-    #     helm upgrade --install falco falcosecurity/falco \
-    #       --namespace falco \
-    #       --set falco.jsonOutput=true \
-    #       --set falco.http_output.enabled=true \
-    #       --set falco.http_output.url="http://falcosidekick.falco.svc.cluster.local:2801" \
-    #       --wait
+          --set config.slack.minimumpriority="warning"
       
     - name: Install Kyverno
       run: |
         helm upgrade --install kyverno kyverno/kyverno \
           --namespace kyverno --create-namespace --wait
-
-
-    # - name: Check and Install Kyverno
-    #   run: |
-    #     if kubectl wait --for=condition=ready pod -l app.kubernetes.io/part-of=kyverno --namespace kyverno --timeout=30s; then
-    #       echo "Kyverno already installed."
-    #     else
-    #       echo "Installing Kyverno..."
-    #       kubectl apply -f https://github.com/kyverno/kyverno/releases/download/v1.11.1/install.yaml
-    #     fi
-
-    # - name: Install Kyverno via kubectl
-    #   # uses: kyverno/action-install-cli@v0.2.0
-    #   # with:
-    #   #   release: 'v1.9.5'
-    #   #   verfy: true
-    #   run: |
-    #     kubectl create -f https://github.com/kyverno/kyverno/releases/download/v1.11.1/install.yaml
     
     - name: Wait for Kyverno to be ready
       run: |
