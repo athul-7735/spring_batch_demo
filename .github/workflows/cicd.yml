@@ -160,6 +160,7 @@ jobs:
         helm upgrade --install kyverno kyverno/kyverno \
           --namespace kyverno --create-namespace --wait
 
+
     # - name: Check and Install Kyverno
     #   run: |
     #     if kubectl wait --for=condition=ready pod -l app.kubernetes.io/part-of=kyverno --namespace kyverno --timeout=30s; then
