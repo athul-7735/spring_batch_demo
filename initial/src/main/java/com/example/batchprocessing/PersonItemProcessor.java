@@ -14,7 +14,7 @@ public class PersonItemProcessor implements ItemProcessor<Person, Person> {
         final String lastName = person.lastName().toUpperCase();
 
         final Person transformedPerson = new Person(firstName, lastName);
-
+        log.info("Read from S3 and processing: ({}) => ({})", person, transformedPerson);
         log.info("Converting ({}) into ({})", person, transformedPerson);
 
         return transformedPerson;
