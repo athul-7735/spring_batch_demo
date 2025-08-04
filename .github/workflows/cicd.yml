@@ -161,6 +161,7 @@ jobs:
           --debug \
           --timeout=300s \
           --set admissionController.tls.generate=true \
+          --set admissionController.tls.useSelfSigned=true \
           --set config.webhooks.enabled=true \
           --set admissionController.validatingAdmissionPolicies.enabled=false
     
