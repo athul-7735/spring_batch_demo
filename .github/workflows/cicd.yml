@@ -160,7 +160,7 @@ jobs:
           --namespace kyverno --create-namespace --wait \
           --debug \
           --timeout=300s \
-          --set admissionController.tls.autoGenerate=true \
+          --set admissionController.tls.generate=true \
           --set config.webhooks.enabled=true \
           --set admissionController.validatingAdmissionPolicies.enabled=false
     
