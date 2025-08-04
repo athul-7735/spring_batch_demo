@@ -162,6 +162,8 @@ jobs:
           --timeout=300s \
           --set admissionController.tls.generate=true \
           --set admissionController.tls.useSelfSigned=true \
+          --set admissionController.tls.caSecret.name=kyverno-svc.kyverno.svc.kyverno-tls-ca \
+          --set admissionController.tls.secret.name=kyverno-svc.kyverno.svc.kyverno-tls-pair \
           --set config.webhooks.enabled=true \
           --set admissionController.validatingAdmissionPolicies.enabled=false
     
