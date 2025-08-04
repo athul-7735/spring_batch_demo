@@ -16,12 +16,13 @@ public class BatchProcessingApplication {
 	public static void main(String[] args) throws InterruptedException {
 		System.out.print("Started the main execution!!!");
 		ConfigurableApplicationContext context = SpringApplication.run(BatchProcessingApplication.class, args);
-
+		int exitCode = SpringApplication.exit(context);
+		System.exit(exitCode);
 		// Keep application running after batch completes
 //		System.out.println("Batch completed. Press Ctrl+C to exit.");
 //		new CountDownLatch(1).await(); // Block indefinitely
 
-		System.exit(SpringApplication.exit(SpringApplication.run(BatchProcessingApplication.class, args)));
+//		System.exit(SpringApplication.exit(SpringApplication.run(BatchProcessingApplication.class, args)));
 	}
 
 }
