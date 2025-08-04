@@ -78,10 +78,10 @@ jobs:
         exit-code: 0 # Set to 1 if you want to fail on vulnerabilities
         severity: 'CRITICAL,HIGH'
 
-    - name: Upload Trivy results to GitHub Security
-      uses: github/codeql-action/upload-sarif@v2
-      with:
-        sarif_file: 'trivy-results.sarif'
+    # - name: Upload Trivy results to GitHub Security Requires GitHub Pro Version
+    #   uses: github/codeql-action/upload-sarif@v2
+    #   with:
+    #     sarif_file: 'trivy-results.sarif'
 
     - name: Tag Docker image
       run: |
