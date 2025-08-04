@@ -159,8 +159,10 @@ jobs:
         helm upgrade --install kyverno kyverno/kyverno \
           --namespace kyverno --create-namespace --wait \
           --debug \
-          --set admissionController.tlsGenerate=true \
-          --set config.webhooks.enabled=true
+          --timeout=300s \
+          --set admissionController.tls.autoGenerate=true \
+          --set config.webhooks.enabled=true \
+          --set admissionController.validatingAdmissionPolicies.enabled=false
     
     - name: Wait for Kyverno to be ready
       run: |
