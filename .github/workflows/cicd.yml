@@ -72,12 +72,17 @@ jobs:
     - name: Run Trivy vulnerability scan
       uses: aquasecurity/trivy-action@0.30.0
       with:
-        image-ref: 'ttapp:latest'
+        image-ref: '${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}'
         format: 'sarif'
         output: 'trivy-results.sarif'
         exit-code: 0 # Set to 1 if you want to fail on vulnerabilities
         severity: 'CRITICAL,HIGH'
         
+    - name: Upload Trivy results to GitHub Security
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-results.sarif
+
     - name: Tag Docker image
       run: |
         docker tag $ECR_REPOSITORY:$IMAGE_TAG ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG
