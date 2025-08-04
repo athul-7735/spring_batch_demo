@@ -157,7 +157,10 @@ jobs:
     - name: Install Kyverno
       run: |
         helm upgrade --install kyverno kyverno/kyverno \
-          --namespace kyverno --create-namespace --wait
+          --namespace kyverno --create-namespace --wait \
+          -- dubug \
+          --set admissionController.tlsGenerate=true \
+          --set config.webhooks.enabled=true
     
     - name: Wait for Kyverno to be ready
       run: |
