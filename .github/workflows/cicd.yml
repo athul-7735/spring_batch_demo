@@ -187,7 +187,7 @@ jobs:
     - name: Install Kyverno
       working-directory: ./initial
       run: |
-        kubectl create -f https://github.com/kyverno/kyverno/releases/download/v1.11.1/install.yaml
+        kubectl apply -f https://github.com/kyverno/kyverno/releases/download/v1.11.1/install.yaml
     
     
     - name: Wait for Kyverno to be ready
