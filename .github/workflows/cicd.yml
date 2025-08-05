@@ -162,12 +162,12 @@ jobs:
     #       --set installCRDs=true \
     #       --wait --timeout=300s
 
-    - name: Install Kyverno
-      run: |
-        helm upgrade --install kyverno kyverno/kyverno \
-          --namespace kyverno --create-namespace --wait \
-          --debug \
-          --timeout=300s \
+    # - name: Install Kyverno
+    #   run: |
+    #     helm upgrade --install kyverno kyverno/kyverno \
+    #       --namespace kyverno --create-namespace --wait \
+    #       --debug \
+    #       --timeout=300s \
     # --set admissionController.tls.generate=true \
     # --set admissionController.tls.useSelfSigned=true \
     # --set admissionController.tls.caSecret.name=kyverno-svc.kyverno.svc.kyverno-tls-ca \
@@ -183,6 +183,12 @@ jobs:
     #       --set config.webhooks.enabled=true \
     #       --set admissionController.validatingAdmissionPolicies.enabled=false \
     #       --wait --timeout=300s --debug
+
+    - name: Install Kyverno
+      working-directory: ./initial
+      run: |
+        kubectl create -f https://github.com/kyverno/kyverno/releases/download/v1.11.1/install.yaml
+    
     
     - name: Wait for Kyverno to be ready
       run: |
