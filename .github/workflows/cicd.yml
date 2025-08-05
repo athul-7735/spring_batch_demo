@@ -184,10 +184,15 @@ jobs:
     #       --set admissionController.validatingAdmissionPolicies.enabled=false \
     #       --wait --timeout=300s --debug
 
+    - name: Uninstall Kyverno (if exists)
+      continue-on-error: true
+      run: |
+        kubectl delete -f https://github.com/kyverno/kyverno/releases/download/v1.11.1/install.yaml
+
     - name: Install Kyverno
       working-directory: ./initial
       run: |
-        kubectl apply -f https://github.com/kyverno/kyverno/releases/download/v1.11.1/install.yaml --server-side
+        kubectl apply -f https://github.com/kyverno/kyverno/releases/download/v1.11.1/install.yaml --server-side --force-conflicts
     
     - name: Wait for Kyverno to be ready
       run: |
