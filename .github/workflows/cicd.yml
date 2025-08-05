@@ -136,7 +136,7 @@ jobs:
       run: |
         helm repo add falcosecurity https://falcosecurity.github.io/charts
         helm repo add kyverno https://kyverno.github.io/kyverno/
-        helm repo add jetstack https://charts.jetstack.io
+    # helm repo add jetstack https://charts.jetstack.io
 
     - name: Update Helm repos
       run: helm repo update
@@ -155,34 +155,34 @@ jobs:
           --set falcosidekick.config.slack.webhookurl="https://hooks.slack.com/services/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" \
           --set config.slack.minimumpriority="warning"
       
-    - name: Install cert-manager
-      run: |
-        helm upgrade --install cert-manager jetstack/cert-manager \
-          --namespace cert-manager --create-namespace \
-          --set installCRDs=true \
-          --wait --timeout=300s
-
-    # - name: Install Kyverno
+    # - name: Install cert-manager
     #   run: |
-    #     helm upgrade --install kyverno kyverno/kyverno \
-    #       --namespace kyverno --create-namespace --wait \
-    #       --debug \
-    #       --timeout=300s \
-    #       --set admissionController.tls.generate=true \
-    #       --set admissionController.tls.useSelfSigned=true \
-    #       --set admissionController.tls.caSecret.name=kyverno-svc.kyverno.svc.kyverno-tls-ca \
-    #       --set admissionController.tls.secret.name=kyverno-svc.kyverno.svc.kyverno-tls-pair \
-    #       --set config.webhooks.enabled=true \
-    #       --set admissionController.validatingAdmissionPolicies.enabled=false
+    #     helm upgrade --install cert-manager jetstack/cert-manager \
+    #       --namespace cert-manager --create-namespace \
+    #       --set installCRDs=true \
+    #       --wait --timeout=300s
 
-    - name: Install Kyverno using cert-manager
+    - name: Install Kyverno
       run: |
         helm upgrade --install kyverno kyverno/kyverno \
-          --namespace kyverno --create-namespace \
-          --set certManager.enabled=true \
-          --set config.webhooks.enabled=true \
-          --set admissionController.validatingAdmissionPolicies.enabled=false \
-          --wait --timeout=300s --debug
+          --namespace kyverno --create-namespace --wait \
+          --debug \
+          --timeout=300s \
+    # --set admissionController.tls.generate=true \
+    # --set admissionController.tls.useSelfSigned=true \
+    # --set admissionController.tls.caSecret.name=kyverno-svc.kyverno.svc.kyverno-tls-ca \
+    # --set admissionController.tls.secret.name=kyverno-svc.kyverno.svc.kyverno-tls-pair \
+    # --set config.webhooks.enabled=true \
+    # --set admissionController.validatingAdmissionPolicies.enabled=false
+
+    # - name: Install Kyverno using cert-manager
+    #   run: |
+    #     helm upgrade --install kyverno kyverno/kyverno \
+    #       --namespace kyverno --create-namespace \
+    #       --set certManager.enabled=true \
+    #       --set config.webhooks.enabled=true \
+    #       --set admissionController.validatingAdmissionPolicies.enabled=false \
+    #       --wait --timeout=300s --debug
     
     - name: Wait for Kyverno to be ready
       run: |
