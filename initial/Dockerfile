@@ -1,5 +1,7 @@
 # Use official OpenJDK base image
 FROM eclipse-temurin:17-jdk-jammy
+RUN apt-get update && apt-get install -y curl \
+    && rm -rf /var/lib/apt/lists/*
 # Set working directory
 WORKDIR /app
 # Copy the built JAR file and all necessary resources
