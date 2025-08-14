@@ -159,9 +159,10 @@ spec:
   failedJobsHistoryLimit: 1
   jobTemplate:
     spec:
+      backoffLimit: 0
       template:
         spec:
-          restartPolicy: OnFailure
+          restartPolicy: Never
           containers:
             - name: demo-app-spring
               image: ${IMAGE}
@@ -183,60 +184,47 @@ spec:
                   value: "http://pg-prometheus-pushgateway.monitoring.svc:9091"
                 - name: METRICS_JOB_NAME
                   value: "spring-batch"
-                    # Wrap the app run + push in a shell script
-              command: [ "/bin/sh","-c" ]
+              command: ["/bin/sh","-c"]
               args:
                 - |
                   set -eu
-                  
+
                   echo ">> Ensuring curl exists..."
                   have_curl() { command -v curl >/dev/null 2>&1; }
-                  if ! have_curl; then
-                    # Try Alpine
-                    (command -v apk >/dev/null 2>&1 && apk add --no-cache curl) || true
-                  fi
-                  if ! have_curl; then
-                    # Try Debian/Ubuntu
-                    (command -v apt-get >/dev/null 2>&1 && apt-get update && apt-get install -y curl) || true
-                  fi
-                  if ! have_curl; then
-                    # Try RHEL/CentOS
-                    (command -v yum >/dev/null 2>&1 && yum install -y curl) || true
-                  fi
-                  
-                  if ! have_curl; then
-                    echo "!! curl still not available; metrics will NOT be pushed"
-                  fi
-                  
-                  start=$(date +%s)
+                  if ! have_curl; then (command -v apk >/dev/null 2>&1 && apk add --no-cache curl) || true; fi
+                  if ! have_curl; then (command -v apt-get >/dev/null 2>&1 && apt-get update && apt-get install -y curl) || true; fi
+                  if ! have_curl; then (command -v yum >/dev/null 2>&1 && yum install -y curl) || true; fi
+                  if ! have_curl; then echo "!! curl still not available; metrics will NOT be pushed"; fi
+
                   echo ">> Starting Spring Batch job at $(date)"
-                  
-                  # ----- Run your Spring Batch app -----
-                  # If your image has an entrypoint that already launches the app, call it.
-                  # Otherwise, try to run a jar in /app or current dir.
+                  start=$(date +%s)
+
+                  # --- Run your Spring Batch app ONCE with a unique run.id ---
                   status=0
                   if [ -x "/entrypoint.sh" ]; then
-                    /entrypoint.sh || status=$?
+                    /entrypoint.sh run.id=$(date +%s) || status=$?
                   elif command -v java >/dev/null 2>&1 && ls /app/*.jar >/dev/null 2>&1; then
-                    java -jar /app/*.jar || status=$?
+                    java -jar /app/*.jar run.id=$(date +%s) || status=$?
                   elif command -v java >/dev/null 2>&1 && ls *.jar >/dev/null 2>&1; then
-                    java -jar *.jar || status=$?
+                    java -jar *.jar run.id=$(date +%s) || status=$?
                   else
                     echo "!! Could not find how to start the app. Skipping run."
                     status=1
                   fi
-                  # ------------------------------------
-                  
+
                   end=$(date +%s)
                   duration=$((end - start))
-                  
+                  echo ">> Job exit code: ${status}, duration: ${duration}s"
+
+                  # Build metrics file
                   cat <<EOF >/tmp/metrics.prom
                   # TYPE batch_runs_total counter
                   batch_runs_total{app="spring-batch",exit_code="${status}"} 1
                   # TYPE batch_duration_seconds gauge
                   batch_duration_seconds{app="spring-batch",exit_code="${status}"} ${duration}
                   EOF
-                  
+
+                  # Push to Pushgateway (URL path sets job label = spring-batch)
                   if have_curl; then
                     echo ">> Pushing metrics to ${PUSHGATEWAY_URL}"
                     http_code=$(curl -s -o /tmp/pg.out -w "%{http_code}" --data-binary @/tmp/metrics.prom \
@@ -244,6 +232,6 @@ spec:
                     echo ">> Pushgateway HTTP status: ${http_code}"
                     [ "${http_code}" = "202" ] && echo ">> Push OK" || (echo "!! Push failed"; cat /tmp/pg.out || true)
                   fi
-                  
-                  # Exit with your app's exit code so K8s marks success/failure correctly
+
+                  # Exit with the app's status so K8s records success/failure correctly
                   exit ${status}
