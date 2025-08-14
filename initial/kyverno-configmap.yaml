@@ -3,8 +3,9 @@ kind: ConfigMap
 metadata:
   name: cosign-pub-key
   namespace: kyverno
+immutable: true
 data:
-  cosign.pub: |
+  cosign_pub: |
     -----BEGIN PUBLIC KEY-----
     MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/kbm1DvCTLIxyp9qE5PrIci3y8kR
     9gM5heLisKwfG9wHftWVYYOhi5y4KFHx+QuAiZEypoFp8y0CLcsziawsbQ==
