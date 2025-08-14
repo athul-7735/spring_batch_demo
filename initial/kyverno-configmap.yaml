@@ -3,7 +3,6 @@ kind: ConfigMap
 metadata:
   name: cosign-pub-key
   namespace: kyverno
-immutable: true
 data:
   cosign_pub: |
     -----BEGIN PUBLIC KEY-----
