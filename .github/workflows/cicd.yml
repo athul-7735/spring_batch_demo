@@ -96,15 +96,15 @@ jobs:
       with:
         cosign-release: 'v2.2.2'
 
-    - name: Sign Docker image with Cosign
-      env:
-        COSIGN_EXPERIMENTAL: "1"
-        COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
-        COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
-      run: |
-        IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
-        echo "$COSIGN_KEY" > cosign.key
-        cosign sign --key cosign.key $IMAGE
+    # - name: Sign Docker image with Cosign
+    #   env:
+    #     COSIGN_EXPERIMENTAL: "1"
+    #     COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+    #     COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
+    #   run: |
+    #     IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
+    #     echo "$COSIGN_KEY" > cosign.key
+    #     cosign sign --key cosign.key $IMAGE
 
     - name: Update kubeconfig for EKS
       run: |
