@@ -179,3 +179,50 @@ spec:
                     secretKeyRef:
                       name: mysql-pass
                       key: mysql-user-password
+                - name: PUSHGATEWAY_URL
+                  value: "http://pg-prometheus-pushgateway.monitoring.svc:9091"
+                - name: METRICS_JOB_NAME
+                  value: "spring-batch"
+                    # Wrap the app run + push in a shell script
+              command: [ "/bin/sh","-c" ]
+              args:
+                - |
+                  set -eu
+                  start=$(date +%s)
+                  
+                  echo ">> Starting Spring Batch job at $(date)"
+                  # --- Run your Spring Batch app ---
+                  # If your image runs the app by default, you can just call "exec" without args.
+                  # If you normally do 'java -jar app.jar', put that here instead:
+                  if [ -x "/entrypoint.sh" ]; then
+                    /entrypoint.sh || true
+                  elif command -v java >/dev/null 2>&1 && ls *.jar >/dev/null 2>&1; then
+                    java -jar *.jar || true
+                  else
+                    # Fallback: use the image's default command if any
+                    echo "No explicit run command provided; attempting to run container's default CMD..."
+                  fi
+                  
+                  status=$?  # capture app exit code but continue
+                  end=$(date +%s)
+                  duration=$((end - start))
+                  
+                  # Prepare metrics
+                  cat <<EOF >/tmp/metrics.prom
+                  # TYPE batch_runs_total counter
+                  batch_runs_total{job="${METRICS_JOB_NAME}",exit_code="${status}"} 1
+                  # TYPE batch_duration_seconds gauge
+                  batch_duration_seconds{job="${METRICS_JOB_NAME}",exit_code="${status}"} ${duration}
+                  EOF
+                  
+                  # Push with unique instance label (pod hostname)
+                  if command -v curl >/dev/null 2>&1; then
+                    curl -s --data-binary @/tmp/metrics.prom \
+                      ${PUSHGATEWAY_URL}/metrics/job/${METRICS_JOB_NAME}/instance/$HOSTNAME
+                    echo ">> Pushed metrics to ${PUSHGATEWAY_URL}"
+                  else
+                    echo "!! curl not found; metrics not pushed"
+                  fi
+                  
+                  # Exit with the app's status so Kubernetes marks job success/failure correctly
+                  exit ${status}
