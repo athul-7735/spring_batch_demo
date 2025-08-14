@@ -188,41 +188,62 @@ spec:
               args:
                 - |
                   set -eu
-                  start=$(date +%s)
                   
-                  echo ">> Starting Spring Batch job at $(date)"
-                  # --- Run your Spring Batch app ---
-                  # If your image runs the app by default, you can just call "exec" without args.
-                  # If you normally do 'java -jar app.jar', put that here instead:
-                  if [ -x "/entrypoint.sh" ]; then
-                    /entrypoint.sh || true
-                  elif command -v java >/dev/null 2>&1 && ls *.jar >/dev/null 2>&1; then
-                    java -jar *.jar || true
-                  else
-                    # Fallback: use the image's default command if any
-                    echo "No explicit run command provided; attempting to run container's default CMD..."
+                  echo ">> Ensuring curl exists..."
+                  have_curl() { command -v curl >/dev/null 2>&1; }
+                  if ! have_curl; then
+                    # Try Alpine
+                    (command -v apk >/dev/null 2>&1 && apk add --no-cache curl) || true
+                  fi
+                  if ! have_curl; then
+                    # Try Debian/Ubuntu
+                    (command -v apt-get >/dev/null 2>&1 && apt-get update && apt-get install -y curl) || true
+                  fi
+                  if ! have_curl; then
+                    # Try RHEL/CentOS
+                    (command -v yum >/dev/null 2>&1 && yum install -y curl) || true
                   fi
                   
-                  status=$?  # capture app exit code but continue
+                  if ! have_curl; then
+                    echo "!! curl still not available; metrics will NOT be pushed"
+                  fi
+                  
+                  start=$(date +%s)
+                  echo ">> Starting Spring Batch job at $(date)"
+                  
+                  # ----- Run your Spring Batch app -----
+                  # If your image has an entrypoint that already launches the app, call it.
+                  # Otherwise, try to run a jar in /app or current dir.
+                  status=0
+                  if [ -x "/entrypoint.sh" ]; then
+                    /entrypoint.sh || status=$?
+                  elif command -v java >/dev/null 2>&1 && ls /app/*.jar >/dev/null 2>&1; then
+                    java -jar /app/*.jar || status=$?
+                  elif command -v java >/dev/null 2>&1 && ls *.jar >/dev/null 2>&1; then
+                    java -jar *.jar || status=$?
+                  else
+                    echo "!! Could not find how to start the app. Skipping run."
+                    status=1
+                  fi
+                  # ------------------------------------
+                  
                   end=$(date +%s)
                   duration=$((end - start))
                   
-                  # Prepare metrics
                   cat <<EOF >/tmp/metrics.prom
                   # TYPE batch_runs_total counter
-                  batch_runs_total{job="${METRICS_JOB_NAME}",exit_code="${status}"} 1
+                  batch_runs_total{app="spring-batch",exit_code="${status}"} 1
                   # TYPE batch_duration_seconds gauge
-                  batch_duration_seconds{job="${METRICS_JOB_NAME}",exit_code="${status}"} ${duration}
+                  batch_duration_seconds{app="spring-batch",exit_code="${status}"} ${duration}
                   EOF
                   
-                  # Push with unique instance label (pod hostname)
-                  if command -v curl >/dev/null 2>&1; then
-                    curl -s --data-binary @/tmp/metrics.prom \
-                      ${PUSHGATEWAY_URL}/metrics/job/${METRICS_JOB_NAME}/instance/$HOSTNAME
-                    echo ">> Pushed metrics to ${PUSHGATEWAY_URL}"
-                  else
-                    echo "!! curl not found; metrics not pushed"
+                  if have_curl; then
+                    echo ">> Pushing metrics to ${PUSHGATEWAY_URL}"
+                    http_code=$(curl -s -o /tmp/pg.out -w "%{http_code}" --data-binary @/tmp/metrics.prom \
+                      ${PUSHGATEWAY_URL}/metrics/job/spring-batch/instance/$HOSTNAME || true)
+                    echo ">> Pushgateway HTTP status: ${http_code}"
+                    [ "${http_code}" = "202" ] && echo ">> Push OK" || (echo "!! Push failed"; cat /tmp/pg.out || true)
                   fi
                   
-                  # Exit with the app's status so Kubernetes marks job success/failure correctly
+                  # Exit with your app's exit code so K8s marks success/failure correctly
                   exit ${status}
