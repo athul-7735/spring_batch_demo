@@ -9,7 +9,10 @@ spec:
     - name: verify-signed-images
       match:
         resources:
-          kinds: ["Pod"]
+          kinds:
+            - Pod
+            - Job
+            - CronJob
       context:
         - name: cosignKey
           configMap:
