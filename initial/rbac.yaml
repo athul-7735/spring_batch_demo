@@ -1,0 +1,47 @@
+# spring-batch Role & Binding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: spring-batch-role
+  namespace: batch
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "configmaps", "jobs"]
+    verbs: ["get", "list", "create", "delete", "watch"]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: spring-batch-rolebinding
+  namespace: batch
+subjects:
+  - kind: ServiceAccount
+    name: spring-batch
+roleRef:
+  kind: Role
+  name: spring-batch-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# cicd-deployer Role & Binding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cicd-deployer-role
+  namespace: cicd
+rules:
+  - apiGroups: ["", "apps", "batch"]
+    resources: ["deployments", "services", "configmaps", "jobs"]
+    verbs: ["get", "list", "create", "update", "delete", "patch"]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: cicd-deployer-rolebinding
+  namespace: cicd
+subjects:
+  - kind: ServiceAccount
+    name: cicd-deployer
+roleRef:
+  kind: Role
+  name: cicd-deployer-role
+  apiGroup: rbac.authorization.k8s.io

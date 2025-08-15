@@ -110,6 +110,11 @@ jobs:
       run: |
         aws eks update-kubeconfig --region $AWS_REGION --name ${{ secrets.EKS_CLUSTER_NAME }}
 
+    - name: Apply namespace-scoped RBAC for spring-batch and cicd-deployer
+      run: |
+        kubectl apply -f rbac-spring-batch.yaml
+        kubectl apply -f rbac-cicd-deployer.yaml
+
     - name: Create ConfigMap for SQL
       working-directory: ./initial
       run: |
