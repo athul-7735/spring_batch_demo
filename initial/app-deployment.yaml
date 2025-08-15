@@ -223,27 +223,28 @@ spec:
                     status="${status:-1}"
                     duration="${duration:-0}"
 
-                    cat <<EOF >/tmp/metrics.prom
-                    # TYPE batch_runs_total counter
-                    batch_runs_total{app="spring-batch",exit_code="${status}"} 1
-                    # TYPE batch_duration_seconds gauge
-                    batch_duration_seconds{app="spring-batch",exit_code="${status}"} ${duration}
-                    EOF
-                    
-                    http_code=$(curl -sS -o /tmp/pg.out -w "%{http_code}" \
-                    --data-binary @/tmp/metrics.prom \
-                    "${PUSHGATEWAY_URL}/metrics/job/${METRICS_JOB_NAME}/instance/${HOSTNAME}" || echo "000")
-                  
-                    echo ">> Pushgateway HTTP status: ${http_code}"
-                    if [ "$http_code" = "202" ]; then
-                      echo ">> Push OK"
-                    else
-                      echo "!! Push failed"
-                      if [ -f /tmp/pg.out ]; then
-                        cat /tmp/pg.out
-                      else
-                        echo "No Pushgateway output captured"
-                      fi
-                    fi
-                  fi 
-                  exit ${status}
+  cat <<EOF >/tmp/metrics.prom
+  # TYPE batch_runs_total counter
+  batch_runs_total{app="spring-batch",exit_code="${status}"} 1
+  # TYPE batch_duration_seconds gauge
+  batch_duration_seconds{app="spring-batch",exit_code="${status}"} ${duration}
+  EOF
+  
+  http_code=$(curl -sS -o /tmp/pg.out -w "%{http_code}" \
+  --data-binary @/tmp/metrics.prom \
+  "${PUSHGATEWAY_URL}/metrics/job/${METRICS_JOB_NAME}/instance/${HOSTNAME}" || echo "000")
+
+echo ">> Pushgateway HTTP status: ${http_code}"
+  if [ "$http_code" = "202" ]; then
+  echo ">> Push OK"
+  else
+  echo "!! Push failed"
+  if [ -f /tmp/pg.out ]; then
+  cat /tmp/pg.out
+  else
+  echo "No Pushgateway output captured"
+  fi
+  fi
+  fi
+  
+  exit ${status}
