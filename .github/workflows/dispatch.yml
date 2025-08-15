@@ -8,6 +8,7 @@ jobs:
     env:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       EKS_CLUSTER_NAME: ${{ secrets.EKS_CLUSTER_NAME }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
     steps:
       - uses: actions/checkout@v4
 
@@ -34,6 +35,8 @@ jobs:
         run: |
           helm repo add falcosecurity https://falcosecurity.github.io/charts
           helm repo add kyverno https://kyverno.github.io/kyverno/
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo add grafana https://grafana.github.io/helm-charts
           helm repo update
 
       - name: Install Falco
@@ -41,22 +44,27 @@ jobs:
           helm upgrade --install falco -n falco falcosecurity/falco \
             --set falcosidekick.enabled=true \
             --set falcosidekick.webui.enabled=true \
-            --create-namespace
+            --create-namespace \
+            --wait
 
       - name: Install Kyverno with ECR pull secret
         run: |
           kubectl create namespace kyverno --dry-run=client -o yaml | kubectl apply -f -
           ECR_PASSWORD=$(aws ecr get-login-password --region $AWS_REGION)
           kubectl create secret docker-registry ecr-creds \
-            --docker-server=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com \
+            --docker-server=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com \
             --docker-username=AWS \
             --docker-password="$ECR_PASSWORD" \
             -n kyverno \
             --dry-run=client -o yaml | kubectl apply -f -
+
           helm upgrade --install kyverno kyverno/kyverno \
             --namespace kyverno \
-            --set imagePullSecrets[0].name=ecr-creds \
-            --wait --timeout=300s
+            --create-namespace \
+            --set reportsController.imagePullSecrets[0].name=ecr-creds \
+            --set admissionController.imagePullSecrets[0].name=ecr-creds \
+            --set backgroundController.imagePullSecrets[0].name=ecr-creds \
+            --wait
 
       - name: Apply Kyverno Config and Policies
         working-directory: ./initial
@@ -68,19 +76,18 @@ jobs:
         run: |
           kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f -
 
-          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-          helm repo add grafana https://grafana.github.io/helm-charts
-          helm repo update
-
-          helm upgrade --install pg prometheus-community/prometheus-pushgateway -n monitoring
+          helm upgrade --install pg prometheus-community/prometheus-pushgateway \
+            -n monitoring \
+            --wait
 
           helm upgrade --install prometheus prometheus-community/prometheus \
             -n monitoring \
-            --set server.extraScrapeConfigs[0].job_name=pushgateway \
-            --set server.extraScrapeConfigs[0].static_configs[0].targets[0]=pg-prometheus-pushgateway.monitoring.svc:9091
+            --set-string server.extraScrapeConfigs[0].job_name=pushgateway \
+            --set-string server.extraScrapeConfigs[0].static_configs[0].targets[0]=pg-prometheus-pushgateway.monitoring.svc:9091 \
+            --wait
 
           helm upgrade --install grafana grafana/grafana \
             -n monitoring \
             --set service.type=ClusterIP \
-            --set adminPassword=admin
-
+            --set adminPassword=admin \
+            --wait
