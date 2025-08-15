@@ -189,7 +189,7 @@ spec:
               command: ["/bin/sh","-c"]
               args:
                 - |
-                  set -eu
+                  set -eux
 
                   echo ">> Ensuring curl exists..."
                   have_curl() { command -v curl >/dev/null 2>&1; }
@@ -201,7 +201,6 @@ spec:
                   echo ">> Starting Spring Batch job at $(date)"
                   start=$(date +%s)
 
-                  # --- Run your Spring Batch app ONCE with a unique run.id ---
                   status=0
                   if [ -x "/entrypoint.sh" ]; then
                     /entrypoint.sh run.id=$(date +%s) || status=$?
@@ -218,7 +217,6 @@ spec:
                   duration=$((end - start))
                   echo ">> Job exit code: ${status}, duration: ${duration}s"
 
-                  # --- Push to Pushgateway ---
                   if have_curl; then
                     echo ">> Pushing metrics to ${PUSHGATEWAY_URL}"
 
@@ -231,10 +229,10 @@ spec:
                     # TYPE batch_duration_seconds gauge
                     batch_duration_seconds{app="spring-batch",exit_code="${status}"} ${duration}
                     EOF
-                  
+                    
                     http_code=$(curl -sS -o /tmp/pg.out -w "%{http_code}" \
-                      --data-binary @/tmp/metrics.prom \
-                      "${PUSHGATEWAY_URL}/metrics/job/${METRICS_JOB_NAME}/instance/${HOSTNAME}" || echo "000")
+                    --data-binary @/tmp/metrics.prom \
+                    "${PUSHGATEWAY_URL}/metrics/job/${METRICS_JOB_NAME}/instance/${HOSTNAME}" || echo "000")
                   
                     echo ">> Pushgateway HTTP status: ${http_code}"
                     if [ "$http_code" = "202" ]; then
@@ -247,6 +245,5 @@ spec:
                         echo "No Pushgateway output captured"
                       fi
                     fi
-                  fi
-
+                  fi 
                   exit ${status}
