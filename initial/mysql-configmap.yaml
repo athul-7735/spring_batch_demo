@@ -2,6 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: mysql-config-map
+  namespace: batch
 data:
   mysql-server: demo-app-mysql    # The name of mysql service
   mysql-database-name: batch_process     # The name of the database used by the demo app
