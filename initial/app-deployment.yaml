@@ -153,6 +153,7 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: batch-job
+  namespace: batch
 spec:
   schedule: "*/5 * * * *"
   successfulJobsHistoryLimit: 1
@@ -162,6 +163,7 @@ spec:
       backoffLimit: 0
       template:
         spec:
+          serviceAccountName: spring-batch
           restartPolicy: Never
           containers:
             - name: demo-app-spring

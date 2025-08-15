@@ -158,6 +158,8 @@ jobs:
           --create-namespace \
           --set falcosidekick.config.slack.webhookurl="https://hooks.slack.com/services/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" \
           --set config.slack.minimumpriority="warning"
+          --set-string falcosidekick.config.slack.minimumpriority=warning  
+          --set-string falcosidekick.config.minimumpriority=warning \
 
     # - name: Install Kyverno
     #   run: |
