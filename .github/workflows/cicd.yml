@@ -161,40 +161,40 @@ jobs:
           --set-string falcosidekick.config.slack.minimumpriority=warning \
           --set-string falcosidekick.config.minimumpriority=warning \
 
-    # - name: Delete Kyverno Webhooks
-    #   run: |
-    #     kubectl delete validatingwebhookconfigurations.admissionregistration.k8s.io kyverno-resource-validating-webhook-cfg kyverno-policy-validating-webhook-cfg --ignore-not-found
-    #     kubectl delete mutatingwebhookconfigurations.admissionregistration.k8s.io kyverno-resource-mutating-webhook-cfg kyverno-policy-mutating-webhook-cfg --ignore-not-found
-
-    # - name: Remove Kyverno Namespace Finalizers
-    #   run: |
-    #     if kubectl get ns kyverno >/dev/null 2>&1; then
-    #       kubectl get namespace kyverno -o json | jq '.spec.finalizers=[]' | kubectl replace --raw "/api/v1/namespaces/kyverno/finalize" -f -
-    #     else
-    #       echo "Kyverno namespace not found — skipping finalizer removal"
-    #     fi
-
-    # - name: Delete leftover Kyverno resources
-    #   run: |
-    #     kubectl delete clusterrole,clusterrolebinding,crd,role,rolebinding --selector=app.kubernetes.io/name=kyverno --ignore-not-found
-    #     kubectl delete crd $(kubectl get crd | grep kyverno | awk '{print $1}') --ignore-not-found || true
-
-    # - name: Uninstall Kyverno (if exists)
-    #   continue-on-error: true
-    #   run: |
-    #     kubectl delete -f https://github.com/kyverno/kyverno/releases/download/v1.11.1/install.yaml
-
-    - name: Install Kyverno
+    - name: Delete Kyverno Webhooks
       run: |
-        helm upgrade --install kyverno kyverno/kyverno \
-          --namespace kyverno --create-namespace --wait \
-          --debug \
-          --timeout=300s
-   
+        kubectl delete validatingwebhookconfigurations.admissionregistration.k8s.io kyverno-resource-validating-webhook-cfg kyverno-policy-validating-webhook-cfg --ignore-not-found
+        kubectl delete mutatingwebhookconfigurations.admissionregistration.k8s.io kyverno-resource-mutating-webhook-cfg kyverno-policy-mutating-webhook-cfg --ignore-not-found
+
+    - name: Remove Kyverno Namespace Finalizers
+      run: |
+        if kubectl get ns kyverno >/dev/null 2>&1; then
+          kubectl get namespace kyverno -o json | jq '.spec.finalizers=[]' | kubectl replace --raw "/api/v1/namespaces/kyverno/finalize" -f -
+        else
+          echo "Kyverno namespace not found — skipping finalizer removal"
+        fi
+
+    - name: Delete leftover Kyverno resources
+      run: |
+        kubectl delete clusterrole,clusterrolebinding,crd,role,rolebinding --selector=app.kubernetes.io/name=kyverno --ignore-not-found
+        kubectl delete crd $(kubectl get crd | grep kyverno | awk '{print $1}') --ignore-not-found || true
+
+    - name: Uninstall Kyverno (if exists)
+      continue-on-error: true
+      run: |
+        kubectl delete -f https://github.com/kyverno/kyverno/releases/download/v1.11.1/install.yaml
+
     # - name: Install Kyverno
-    #   working-directory: ./initial
     #   run: |
-    #     kubectl apply -f https://github.com/kyverno/kyverno/releases/download/v1.11.1/install.yaml --server-side --force-conflicts
+    #     helm upgrade --install kyverno kyverno/kyverno \
+    #       --namespace kyverno --create-namespace --wait \
+    #       --debug \
+    #       --timeout=300s
+   
+    - name: Install Kyverno
+      working-directory: ./initial
+      run: |
+        kubectl apply -f https://github.com/kyverno/kyverno/releases/download/v1.11.1/install.yaml --server-side --force-conflicts
     
     - name: Wait for Kyverno to be ready
       run: |
