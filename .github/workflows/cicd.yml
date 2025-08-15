@@ -161,13 +161,6 @@ jobs:
           --set-string falcosidekick.config.slack.minimumpriority=warning \
           --set-string falcosidekick.config.minimumpriority=warning \
 
-    - name: Install Kyverno
-      run: |
-        helm upgrade --install kyverno kyverno/kyverno \
-          --namespace kyverno --create-namespace --wait \
-          --debug \
-          --timeout=300s
-   
     # - name: Delete Kyverno Webhooks
     #   run: |
     #     kubectl delete validatingwebhookconfigurations.admissionregistration.k8s.io kyverno-resource-validating-webhook-cfg kyverno-policy-validating-webhook-cfg --ignore-not-found
@@ -191,6 +184,13 @@ jobs:
     #   run: |
     #     kubectl delete -f https://github.com/kyverno/kyverno/releases/download/v1.11.1/install.yaml
 
+    - name: Install Kyverno
+      run: |
+        helm upgrade --install kyverno kyverno/kyverno \
+          --namespace kyverno --create-namespace --wait \
+          --debug \
+          --timeout=300s
+   
     # - name: Install Kyverno
     #   working-directory: ./initial
     #   run: |
