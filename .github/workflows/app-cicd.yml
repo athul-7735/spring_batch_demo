@@ -72,10 +72,11 @@ jobs:
       - name: Apply MySQL Config & Deployment
         working-directory: ./initial
         run: |
-          kubectl create configmap init-sql-script --from-file=src/main/resources/schema.sql --dry-run=client -o yaml | kubectl apply -f -
-          kubectl apply -f mysql-configmap.yaml
-          kubectl apply -f secrets.yaml
-          kubectl apply -f mysql-deployment.yaml
+          kubectl create namespace batch --dry-run=client -o yaml | kubectl apply -f -
+          kubectl create configmap init-sql-script --from-file=src/main/resources/schema.sql -n batch --dry-run=client -o yaml | kubectl apply -f -
+          kubectl apply -n batch -f mysql-configmap.yaml
+          kubectl apply -n batch -f secrets.yaml
+          kubectl apply -n batch -f mysql-deployment.yaml
 
       - name: Wait for MySQL to be ready
         run: kubectl wait --for=condition=ready pod -l app=demo-app --timeout=120s
