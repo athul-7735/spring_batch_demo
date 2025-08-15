@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+        - name: myapp
+          image: 557690581666.dkr.ecr.eu-west-1.amazonaws.com/spring-batch-eks:latest
+          ports:
+            - containerPort: 8080
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-service
+spec:
+  selector:
+    app: myapp
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
+
+
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: mysql
+#spec:
+#  type: ClusterIP
+#  ports:
+#    - port: 3306
+#      targetPort: 3306
+#---
+#kind: Endpoints
+#apiVersion: v1
+#metadata:
+#  name: mysql
+#subsets:
+#  - addresses:
+#      - ip: 192.168.1.53 # This is my local IP, you might need to change it if needed
+#    ports:
+#      - port: 3306
+#---
+#apiVersion: v1
+#kind: Secret
+#metadata:
+#  name: db-secret
+#type: Opaque
+#data:
+#  # base64 of "root" ($>echo -n "root" | base64)
+#  db.username: cm9vdA==
+#  db.password: cm9vdA==

@@ -1,0 +1,42 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-cosign-signatures
+spec:
+  validationFailureAction: enforce
+  background: true
+  rules:
+    - name: verify-signed-images
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+                - Job
+                - CronJob
+      context:
+        - name: cosignKey
+          configMap:
+            name: cosign-pub-key
+            namespace: kyverno
+      verifyImages:
+        - imageReferences:
+          - "557690581666.dkr.ecr.eu-west-1.amazonaws.com/*:*"
+          - "557690581666.dkr.ecr.eu-west-1.amazonaws.com/*@sha256:*"
+          key: "{{ cosignKey.data.cosign_pub }}"
+          repository: "557690581666.dkr.ecr.eu-west-1.amazonaws.com"
+
+
+
+
+#        - imageReferences:
+#          - "557690581666.dkr.ecr.eu-west-1.amazonaws.com/*"
+#          attestors:
+#              - count: 1
+#                entries:v
+#                  - keys:
+#                      publicKeys: |-
+#                        -----BEGIN PUBLIC KEY-----
+#                        MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/kbm1DvCTLIxyp9qE5PrIci3y8kR
+#                        9gM5heLisKwfG9wHftWVYYOhi5y4KFHx+QuAiZEypoFp8y0CLcsziawsbQ==
+#                        -----END PUBLIC KEY-----
