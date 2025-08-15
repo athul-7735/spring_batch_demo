@@ -186,7 +186,7 @@ spec:
                   value: "http://pg-prometheus-pushgateway.monitoring.svc:9091"
                 - name: METRICS_JOB_NAME
                   value: "spring-batch"
-              command: ["/bin/sh","-c"]
+              command: [ "/bin/sh","-c" ]
               args:
                 - |
                   set -eu
@@ -218,43 +218,36 @@ spec:
                   duration=$((end - start))
                   echo ">> Job exit code: ${status}, duration: ${duration}s"
 
-                  # Build metrics file
-                  cat <<EOF >/tmp/metrics.prom
-                  # TYPE batch_runs_total counter
-                  batch_runs_total{app="spring-batch",exit_code="${status}"} 1
-                  # TYPE batch_duration_seconds gauge
-                  batch_duration_seconds{app="spring-batch",exit_code="${status}"} ${duration}
-                  EOF
-
-                  # --- Push to Pushgateway (URL path sets job label = spring-batch) ---
+                  # --- Push to Pushgateway ---
                   if have_curl; then
                     echo ">> Pushing metrics to ${PUSHGATEWAY_URL}"
-                  
-                    # Ensure status has a default
+
                     status="${status:-1}"
                     duration="${duration:-0}"
-                  
-                    # Create metrics file
+
                     cat <<EOF >/tmp/metrics.prom
                     # TYPE batch_runs_total counter
                     batch_runs_total{app="spring-batch",exit_code="${status}"} 1
                     # TYPE batch_duration_seconds gauge
                     batch_duration_seconds{app="spring-batch",exit_code="${status}"} ${duration}
                     EOF
-                  
-                    # Push and capture both HTTP code & body safely
+                    
                     http_code=$(curl -sS -o /tmp/pg.out -w "%{http_code}" \
-                      --data-binary @/tmp/metrics.prom \
-                      "${PUSHGATEWAY_URL}/metrics/job/${METRICS_JOB_NAME}/instance/${HOSTNAME}" || echo "000")
-  
+                    --data-binary @/tmp/metrics.prom \
+                    "${PUSHGATEWAY_URL}/metrics/job/${METRICS_JOB_NAME}/instance/${HOSTNAME}" || echo "000")
+      
                     echo ">> Pushgateway HTTP status: ${http_code}"
                     if [ "$http_code" = "202" ]; then
                       echo ">> Push OK"
                     else
                       echo "!! Push failed"
-                    [ -f /tmp/pg.out ] && cat /tmp/pg.out || echo "No Pushgateway output captured"
+                      if [ -f /tmp/pg.out ]; then
+                        cat /tmp/pg.out
+                      else
+                        echo "No Pushgateway output captured"
+                      fi
                     fi
                   fi
-
-                  # Exit with the app's status so K8s records success/failure correctly
+                    
                   exit ${status}
+              
