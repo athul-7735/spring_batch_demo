@@ -83,7 +83,6 @@ public class BatchConfiguration {
                 .reader(reader)
                 .processor(processor)
                 .writer(writer)
-                .allowStartIfComplete(true)
                 .build();
     }
 }
