@@ -21,7 +21,7 @@ spec:
             namespace: kyverno
       verifyImages:
         - imageReferences:
-          - "557690581666.dkr.ecr.eu-west-1.amazonaws.com/*:*"
-          - "557690581666.dkr.ecr.eu-west-1.amazonaws.com/*@sha256:*"
+          - "557690581666.dkr.ecr.eu-west-1.amazonaws.com/*:latest"
+          - "557690581666.dkr.ecr.eu-west-1.amazonaws.com/*@sha256:latest"
           key: "{{ cosignKey.data.cosign_pub }}"
           repository: "557690581666.dkr.ecr.eu-west-1.amazonaws.com"
