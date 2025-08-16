@@ -85,6 +85,17 @@ jobs:
           kubectl rollout restart deploy -n kyverno kyverno-admission-controller
           kubectl rollout restart deploy -n kyverno kyverno-background-controller
 
+
+      - name: Apply Cosign public key ConfigMap
+        working-directory: ./initial
+        run: |
+          kubectl apply -f kyverno-configmap.yaml
+
+      - name: Apply Kyverno verify-image policy
+        working-directory: ./initial
+        run: |
+          kubectl apply -f kyverno-policy.yaml
+
       - name: Install Prometheus + Pushgateway + Grafana
         run: |
           kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f -
