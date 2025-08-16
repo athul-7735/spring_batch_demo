@@ -1,6 +1,7 @@
 package com.example.batchprocessing;
 
 import io.prometheus.metrics.core.metrics.Gauge;
+import io.prometheus.metrics.core.metrics.Counter;
 import io.prometheus.metrics.exporter.pushgateway.PushGateway;
 import io.prometheus.metrics.model.snapshots.Unit;
 import org.springframework.batch.core.JobExecution;
@@ -18,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 public class JobCompletionNotificationListener implements JobExecutionListener {
 
     private final PushGateway pushGateway;
-    private final Gauge batchRunsGauge;
+    private final Counter batchRunsGauge;
     private final Gauge batchDurationGauge;
 
     public JobCompletionNotificationListener(
