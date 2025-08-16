@@ -33,17 +33,6 @@ public class BatchConfiguration {
                 .build();
     }
 
-//    @Bean
-//    public FlatFileItemReader<Person> reader() {
-//        return new FlatFileItemReaderBuilder<Person>()
-//                .name("personItemReader")
-//                .resource(new ClassPathResource("sample-data.csv"))
-//                .delimited()
-//                .names("firstName", "lastName")
-//                .targetType(Person.class)
-//                .build();
-//    }
-
     @Bean
     public FlatFileItemReader<Person> reader(S3Client s3Client) {
         log.info("📦 Fetching file from S3...");
@@ -68,15 +57,6 @@ public class BatchConfiguration {
     public PersonItemProcessor processor() {
         return new PersonItemProcessor();
     }
-
-//    @Bean
-//    public JdbcBatchItemWriter<Person> writer(DataSource dataSource) {
-//        return new JdbcBatchItemWriterBuilder<Person>()
-//                .sql("INSERT INTO people (first_name, last_name) VALUES (:firstName, :lastName)")
-//                .dataSource(dataSource)
-//                .beanMapped()
-//                .build();
-//    }
 
     @Bean
     public JdbcBatchItemWriter<Person> writer(DataSource dataSource) {
@@ -103,6 +83,7 @@ public class BatchConfiguration {
                 .reader(reader)
                 .processor(processor)
                 .writer(writer)
+                .allowStartIfComplete(true)
                 .build();
     }
 }
