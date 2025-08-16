@@ -22,7 +22,7 @@ public class JobCompletionNotificationListener implements JobExecutionListener {
     private final Gauge batchDurationGauge;
 
     public JobCompletionNotificationListener(
-            @Value("${pushgateway.url}") String pushGatewayUrl,
+            @Value("${pushgateway.url:pg-prometheus-pushgateway.monitoring.svc:9091}") String pushGatewayUrl,
             @Value("${pushgateway.jobname:spring-batch-job}") String metricsJobName) {
 
         // Build PushGateway instance
