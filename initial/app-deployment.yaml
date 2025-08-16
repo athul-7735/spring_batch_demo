@@ -184,57 +184,57 @@ spec:
                       key: mysql-user-password
                 - name: PUSHGATEWAY_URL
                   value: "http://pg-prometheus-pushgateway.monitoring.svc:9091"
-                - name: METRICS_JOB_NAME
+                - name: PUSHGATEWAY_JOBNAME
                   value: "spring-batch"
-              command: ["/bin/sh","-c"]
-              args:
-                - |
-                  set -eux
-
-                  echo ">> Starting Spring Batch job at $(date)"
-                  start=$(date +%s)
-                  status=0
-
-                  if [ -x "/entrypoint.sh" ]; then
-                    /entrypoint.sh run.id=$(date +%s) || status=$?
-                  elif command -v java >/dev/null 2>&1 && ls /app/*.jar >/dev/null 2>&1; then
-                    java -jar /app/*.jar run.id=$(date +%s) || status=$?
-                  elif command -v java >/dev/null 2>&1 && ls *.jar >/dev/null 2>&1; then
-                    java -jar *.jar run.id=$(date +%s) || status=$?
-                  else
-                    echo "!! Could not find how to start the app. Skipping run."
-                    status=1
-                  fi
-
-                  end=$(date +%s)
-                  duration=$((end - start))
-                  echo ">> Job exit code: ${status}, duration: ${duration}s"
-
-                  echo ">> Pushing metrics to ${PUSHGATEWAY_URL}"
-                  payload="$(cat <<'METRICS'
-                    # TYPE batch_runs_total counter
-                    batch_runs_total{app="spring-batch",exit_code="${status}"} 1
-                    # TYPE batch_duration_seconds gauge
-                    batch_duration_seconds{app="spring-batch",exit_code="${status}"} ${duration}
-                  METRICS
-                  )"
-                  payload="$(echo "$payload" | sed 's/^ \{2\}//')"
-                  
-                  http_code=$(echo "$payload" | curl -sS -o /tmp/pg.out -w "%{http_code}" \
-                  --data-binary @- \
-                  "${PUSHGATEWAY_URL}/metrics/job/${METRICS_JOB_NAME}/instance/${HOSTNAME}" || echo "000")
-    
-                  echo ">> Pushgateway HTTP status: ${http_code}"
-                  if [ "$http_code" = "202" ]; then
-                    echo ">> Push OK"
-                  else
-                    echo "!! Push failed"
-                    if [ -f /tmp/pg.out ]; then
-                      cat /tmp/pg.out
-                    else
-                      echo "No Pushgateway output captured"
-                    fi
-                  fi
-                  
-                  exit ${status}
+#              command: ["/bin/sh","-c"]
+#              args:
+#                - |
+#                  set -eux
+#
+#                  echo ">> Starting Spring Batch job at $(date)"
+#                  start=$(date +%s)
+#                  status=0
+#
+#                  if [ -x "/entrypoint.sh" ]; then
+#                    /entrypoint.sh run.id=$(date +%s) || status=$?
+#                  elif command -v java >/dev/null 2>&1 && ls /app/*.jar >/dev/null 2>&1; then
+#                    java -jar /app/*.jar run.id=$(date +%s) || status=$?
+#                  elif command -v java >/dev/null 2>&1 && ls *.jar >/dev/null 2>&1; then
+#                    java -jar *.jar run.id=$(date +%s) || status=$?
+#                  else
+#                    echo "!! Could not find how to start the app. Skipping run."
+#                    status=1
+#                  fi
+#
+#                  end=$(date +%s)
+#                  duration=$((end - start))
+#                  echo ">> Job exit code: ${status}, duration: ${duration}s"
+#
+#                  echo ">> Pushing metrics to ${PUSHGATEWAY_URL}"
+#                  payload="$(cat <<'METRICS'
+#                    # TYPE batch_runs_total counter
+#                    batch_runs_total{app="spring-batch",exit_code="${status}"} 1
+#                    # TYPE batch_duration_seconds gauge
+#                    batch_duration_seconds{app="spring-batch",exit_code="${status}"} ${duration}
+#                  METRICS
+#                  )"
+#                  payload="$(echo "$payload" | sed 's/^ \{2\}//')"
+#
+#                  http_code=$(echo "$payload" | curl -sS -o /tmp/pg.out -w "%{http_code}" \
+#                  --data-binary @- \
+#                  "${PUSHGATEWAY_URL}/metrics/job/${METRICS_JOB_NAME}/instance/${HOSTNAME}" || echo "000")
+#
+#                  echo ">> Pushgateway HTTP status: ${http_code}"
+#                  if [ "$http_code" = "202" ]; then
+#                    echo ">> Push OK"
+#                  else
+#                    echo "!! Push failed"
+#                    if [ -f /tmp/pg.out ]; then
+#                      cat /tmp/pg.out
+#                    else
+#                      echo "No Pushgateway output captured"
+#                    fi
+#                  fi
+#
+#                  exit ${status}
               
