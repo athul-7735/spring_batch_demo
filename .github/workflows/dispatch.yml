@@ -57,15 +57,15 @@ jobs:
       #     echo "Waiting for Kyverno pods to be ready..."
       #     kubectl wait --for=condition=ready pod -l app.kubernetes.io/part-of=kyverno --namespace kyverno --timeout=120s
 
-      - name: Create ECR pull secret for Kyverno
-        run: |
-          ECR_PASSWORD=$(aws ecr get-login-password --region $AWS_REGION)
-          kubectl create secret docker-registry ecr-creds \
-            --docker-server=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com \
-            --docker-username=AWS \
-            --docker-password="$ECR_PASSWORD" \
-            -n kyverno \
-            --dry-run=client -o yaml | kubectl apply -f -
+      # - name: Create ECR pull secret for Kyverno
+      #   run: |
+      #     ECR_PASSWORD=$(aws ecr get-login-password --region $AWS_REGION)
+      #     kubectl create secret docker-registry ecr-creds \
+      #       --docker-server=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com \
+      #       --docker-username=AWS \
+      #       --docker-password="$ECR_PASSWORD" \
+      #       -n kyverno \
+      #       --dry-run=client -o yaml | kubectl apply -f -
 
 
       # - name: Patch Kyverno admission controller for ECR auth
