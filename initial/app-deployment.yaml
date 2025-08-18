@@ -10,9 +10,9 @@ spec:
   jobTemplate:
     spec:
       backoffLimit: 2
+      ttlSecondsAfterFinished: 300
       template:
         spec:
-          ttlSecondsAfterFinished: 300
           serviceAccountName: spring-batch
           restartPolicy: OnFailure
           containers:
