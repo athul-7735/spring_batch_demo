@@ -171,7 +171,7 @@ spec:
               imagePullPolicy: IfNotPresent
               env:
                 - name: SPRING_DATASOURCE_URL
-                  value: jdbc:mysql://demo-app-mysql.default.svc.cluster.local:3306/batch_process?useSSL=false&allowPublicKeyRetrieval=true
+                  value: jdbc:mysql://demo-app-mysql.batch.svc.cluster.local:3306/batch_process?useSSL=false&allowPublicKeyRetrieval=true
                 - name: SPRING_DATASOURCE_USERNAME
                   valueFrom:
                     configMapKeyRef:
