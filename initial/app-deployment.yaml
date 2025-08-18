@@ -13,7 +13,7 @@ spec:
       template:
         spec:
           serviceAccountName: spring-batch
-          restartPolicy: onFailure
+          restartPolicy: OnFailure
           containers:
             - name: demo-app-spring
               image: ${IMAGE}
