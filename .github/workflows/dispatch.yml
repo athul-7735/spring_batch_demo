@@ -39,13 +39,21 @@ jobs:
           helm repo add grafana https://grafana.github.io/helm-charts
           helm repo update
 
-      - name: Install Falco
+      - name: Install Falco with HTTP output enabled
         run: |
           helm upgrade --install falco -n falco falcosecurity/falco \
             --set falcosidekick.enabled=true \
             --set falcosidekick.webui.enabled=true \
+            --set auditLog.enabled=true \
+            --set falco.jsonOutput=true \
+            --set falco.fileOutput.enabled=true \
+            --set falco.http_output.enabled=true \
+            --set falco.http_output.url="http://falco-falcosidekick.falco.svc.cluster.local:2801" \
             --create-namespace \
-            --wait
+            --set falcosidekick.config.slack.webhookurl="https://hooks.slack.com/services/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" \
+            --set config.slack.minimumpriority="warning" \
+            --set-string falcosidekick.config.slack.minimumpriority=warning \
+            --set-string falcosidekick.config.minimumpriority=warning \
 
       - name: Install Kyverno
         working-directory: ./initial
