@@ -25,7 +25,7 @@ metadata:
   namespace: batch
 rules:
   - apiGroups: [""]
-    resources: ["pods", "configmaps", "jobs"]
+    resources: ["pods", "configmaps", "jobs", "secrets"]
     verbs: ["get", "list", "create", "delete", "watch"]
 ---
 kind: RoleBinding

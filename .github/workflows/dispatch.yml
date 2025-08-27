@@ -5,7 +5,7 @@ on:
 permissions:
   id-token: write
   contents: read 
-  
+
 jobs:
   setup:
     runs-on: ubuntu-latest
@@ -48,7 +48,13 @@ jobs:
           helm repo add kyverno https://kyverno.github.io/kyverno/
           helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
           helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo add secrets-store-csi-driver https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts
+          helm install csi-secrets-store secrets-store-csi-driver/secrets-store-csi-driver --namespace kube-system
           helm repo update
+      
+      - name: Install Secrets Store CSI Driver
+        run: |
+         kubectl apply -f https://raw.githubusercontent.com/aws/secrets-store-csi-driver-provider-aws/main/deployment/aws-provider-installer.yaml
 
       - name: Install Falco with HTTP output enabled
         run: |
