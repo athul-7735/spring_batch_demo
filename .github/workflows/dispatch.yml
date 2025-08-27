@@ -49,7 +49,7 @@ jobs:
           helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
           helm repo add grafana https://grafana.github.io/helm-charts
           helm repo add secrets-store-csi-driver https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts
-          helm install csi-secrets-store secrets-store-csi-driver/secrets-store-csi-driver --namespace kube-system
+          helm install csi-secrets-store secrets-store-csi-driver/secrets-store-csi-driver --namespace kube-system --set syncSecret.enabled=true --wait
           helm repo update
       
       - name: Install Secrets Store CSI Driver
