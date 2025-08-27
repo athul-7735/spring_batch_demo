@@ -24,15 +24,26 @@ spec:
                   value: jdbc:mysql://demo-app-mysql.batch.svc.cluster.local:3306/batch_process?useSSL=false&allowPublicKeyRetrieval=true
                 - name: SPRING_DATASOURCE_USERNAME
                   valueFrom:
-                    configMapKeyRef:
-                      name: mysql-config-map
-                      key: mysql-user-username
+                    secretKeyRef:
+                      name: batch-mysql-auth-k8s
+                      key: username
                 - name: SPRING_DATASOURCE_PASSWORD
                   valueFrom:
                     secretKeyRef:
-                      name: mysql-pass
+                      name: batch-mysql-auth-k8s
                       key: mysql-user-password
                 - name: PUSHGATEWAY_URL
                   value: "pg-prometheus-pushgateway.monitoring.svc:9091"
                 - name: PUSHGATEWAY_JOBNAME
                   value: "spring-batch"
+              volumeMounts:
+              - name: secrets-store
+                mountPath: "/mnt/secrets"
+                readOnly: true
+          volumes:
+            - name: secrets-store
+              csi:
+                driver: secrets-store.csi.k8s.io
+                readOnly: true
+                volumeAttributes:
+                  secretProviderClass: aws-secrets

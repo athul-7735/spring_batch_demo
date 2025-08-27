@@ -1,21 +1,3 @@
-## PersistentVolume
-#apiVersion: v1
-#kind: PersistentVolume
-#metadata:
-#  name: mysql-pv
-#spec:
-#  capacity:
-#    storage: 2Gi
-#  accessModes:
-#    - ReadWriteOnce
-#  persistentVolumeReclaimPolicy: Retain
-#  volumeMode: Filesystem
-#  storageClassName: manual
-#  awsElasticBlockStore:
-#    volumeID: vol-0431616e41bc74819
-#    fsType: ext4
-#---
-# PersistentVolumeClaim
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -46,20 +28,6 @@ spec:
     tier: mysql
   clusterIP: None
 ---
-#apiVersion: v1
-#kind: PersistentVolumeClaim
-#metadata:
-#  name: mysql-pvc
-#  labels:
-#    app: demo-app
-#spec:
-#  accessModes:
-#    - ReadWriteOnce
-#  resources:
-#    requests:
-#      storage: 2Gi
-#  storageClassName: gp2  # or "gp3", "standard", etc.
-#---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -80,6 +48,7 @@ spec:
         app: demo-app
         tier: mysql
     spec:
+      serviceAccountName: spring-batch
       containers:
         - image: mysql:5.6
           name: mysql
@@ -92,17 +61,17 @@ spec:
             - name: MYSQL_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: mysql-pass
+                  name: batch-mysql-auth-k8s
                   key: mysql-root-password
             - name: MYSQL_USER
               valueFrom:
-                configMapKeyRef:
-                  name: mysql-config-map
-                  key: mysql-user-username
+                secretKeyRef:
+                  name: batch-mysql-auth-k8s
+                  key: username
             - name: MYSQL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: mysql-pass
+                  name: batch-mysql-auth-k8s
                   key: mysql-user-password
           livenessProbe:
             tcpSocket:
