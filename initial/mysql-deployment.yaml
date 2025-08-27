@@ -85,6 +85,9 @@ spec:
             - name: init-script
               mountPath: /docker-entrypoint-initdb.d
               readOnly: true
+            - name: secrets-store-inline
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
           readinessProbe:
             exec:
               command:
@@ -103,3 +106,9 @@ spec:
             items:
               - key: schema.sql
                 path: init.sql
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: mysql-pass
