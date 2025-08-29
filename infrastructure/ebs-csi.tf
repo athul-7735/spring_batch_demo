@@ -31,7 +31,7 @@ resource "aws_iam_role_policy_attachment" "ebs_csi_driver_attach" {
 resource "aws_eks_addon" "ebs_csi" {
   cluster_name                  = module.eks.cluster_name
   addon_name                    = "aws-ebs-csi-driver"
-  addon_version                 = "v1.28.0-eksbuild.1" # Optional: update as needed
+  addon_version                 = "v1.28.0-eksbuild.1"
   service_account_role_arn      = aws_iam_role.ebs_csi_driver.arn
   resolve_conflicts_on_create   = "OVERWRITE"
   resolve_conflicts_on_update   = "OVERWRITE"
