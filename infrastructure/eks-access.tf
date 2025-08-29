@@ -96,14 +96,6 @@ resource "aws_iam_policy" "kms_decrypt_policy" {
   })
 }
 
-# resource "aws_iam_role_policy_attachment" "attach_kms_policy_to_nodes" {
-#   role       = module.eks.eks_managed_node_groups["node_group"].iam_role_name
-#   policy_arn = aws_iam_policy.kms_decrypt_policy.arn
-
-#   depends_on = [aws_iam_policy.kms_decrypt_policy, module.eks]
-# }
-
-
 
 data "aws_eks_cluster" "this" {
   name = module.eks.cluster_name
@@ -141,23 +133,37 @@ resource "aws_iam_role" "spring_batch_irsa" {
 
 resource "aws_iam_policy" "spring_batch_minimal" {
   name        = "SpringBatchMinimalS3KMS"
-  description = "Minimal S3/KMS access for Spring Batch"
+  description = "Minimal S3/KMS/SecretsManager access for Spring Batch"
   policy      = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
         Effect   = "Allow",
-        Action   = ["s3:GetObject", "s3:ListBucket","kms:Decrypt"],
+        Action   = [
+          "s3:GetObject",
+          "s3:ListBucket"
+        ],
         Resource = [
           "arn:aws:s3:::batch-process-store",
-          "arn:aws:s3:::batch-process-store/*",
-          "arn:aws:kms:eu-west-1:557690581666:key/e43b2237-096c-412c-a1cd-76fb0d3b6d13"
+          "arn:aws:s3:::batch-process-store/*"
         ]
       },
       {
         Effect   = "Allow",
-        Action   = ["kms:Decrypt"],
+        Action   = [
+          "kms:Decrypt",
+          "kms:DescribeKey"
+        ],
         Resource = "arn:aws:kms:eu-west-1:557690581666:key/e43b2237-096c-412c-a1cd-76fb0d3b6d13"
+      },
+      {
+        Effect   = "Allow",
+        Action   = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret",
+          "secretsmanager:ListSecretVersionIds"
+        ],
+        Resource = "arn:aws:secretsmanager:eu-west-1:557690581666:secret:batch-mysql-auth*"
       }
     ]
   })
@@ -187,7 +193,7 @@ resource "aws_kms_key_policy" "allow_spring_batch_irsa" {  # CHANGE: Added to le
         Resource  = "*"
       },
       {
-        Sid       = "AllowSpringBatchIRSADecrypt",  # CHANGE: New statement for IRSA role
+        Sid       = "AllowSpringBatchIRSADecrypt",
         Effect    = "Allow",
         Principal = {
           AWS = aws_iam_role.spring_batch_irsa.arn
@@ -201,18 +207,6 @@ resource "aws_kms_key_policy" "allow_spring_batch_irsa" {  # CHANGE: Added to le
     ]
   })
 }
-
-# resource "kubernetes_service_account" "spring_batch" { 
-#   metadata {
-#     name      = "spring-batch"
-#     annotations = {
-#       "eks.amazonaws.com/role-arn" = aws_iam_role.spring_batch_irsa.arn 
-#     }
-#   }
-#   depends_on = [
-#     module.eks
-#   ]
-# }
 
 resource "aws_iam_role" "cicd_deployer_irsa" {
   name               = "CICDDeployerIRSA"
@@ -260,24 +254,41 @@ resource "aws_iam_role_policy_attachment" "cicd_deployer_attach" {
   policy_arn = aws_iam_policy.cicd_deployer_ecr.arn
 }
 
-
-# Delay resource (waits for IAM access propagation)
-resource "time_sleep" "wait_for_eks_access" {
-  depends_on = [
-    aws_eks_access_policy_association.eks_admin_policy
-  ]
-  create_duration = "60s"
+resource "aws_eks_access_entry" "gha_role_access" {
+  cluster_name  = module.eks.cluster_name
+  principal_arn = "arn:aws:iam::557690581666:role/GitHubActionsEKSRole"
 }
 
-resource "kubernetes_service_account" "no_kms_sa" {
-  metadata {
-    name      = "no-kms-access"
-    namespace = "default"
+resource "aws_eks_access_policy_association" "gha_role_admin" {
+  cluster_name  = module.eks.cluster_name
+  principal_arn = aws_eks_access_entry.gha_role_access.principal_arn
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+
+  access_scope {
+    type = "cluster"
   }
-  depends_on = [
-    module.eks,
-    aws_eks_access_entry.eks_admin_access,
-    aws_eks_access_policy_association.eks_admin_policy,
-    time_sleep.wait_for_eks_access
-  ]
+
+  depends_on = [aws_eks_access_entry.gha_role_access, module.eks]
 }
+
+
+# # Delay resource (waits for IAM access propagation)
+# resource "time_sleep" "wait_for_eks_access" {
+#   depends_on = [
+#     aws_eks_access_policy_association.eks_admin_policy
+#   ]
+#   create_duration = "60s"
+# }
+
+# resource "kubernetes_service_account" "no_kms_sa" {
+#   metadata {
+#     name      = "no-kms-access"
+#     namespace = "default"
+#   }
+#   depends_on = [
+#     module.eks,
+#     aws_eks_access_entry.eks_admin_access,
+#     aws_eks_access_policy_association.eks_admin_policy,
+#     time_sleep.wait_for_eks_access
+#   ]
+# }

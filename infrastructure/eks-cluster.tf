@@ -13,10 +13,10 @@ module "eks" {
     cluster = "eks-demo"
   }
   
-  cluster_encryption_config = [{
+ cluster_encryption_config = {
     resources        = ["secrets"]
     provider_key_arn = aws_kms_key.eks_secrets.arn
-  }]
+  }
 
   eks_managed_node_group_defaults = {
     ami_type               = "AL2_x86_64"
@@ -28,7 +28,7 @@ module "eks" {
 
     node_group = {
       min_size     = 1
-      max_size     = 3
+      max_size     = 5
       desired_size = 2
     }
   }
